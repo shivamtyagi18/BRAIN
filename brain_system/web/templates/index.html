@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Brain System</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Setup Modal -->
+    <div id="setup-modal" class="modal active">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="brain-icon">🧠</div>
+                <h1>Brain System</h1>
+                <p class="subtitle">Multi-Agent Cognitive Architecture</p>
+            </div>
+
+            <!-- Step 1: Provider Selection -->
+            <div id="step-provider" class="setup-step active">
+                <h2>Select LLM Provider</h2>
+                <div class="provider-cards">
+                    <div class="provider-card" data-provider="gemini">
+                        <div class="card-icon">✨</div>
+                        <h3>Gemini</h3>
+                        <p>Google AI API</p>
+                    </div>
+                    <div class="provider-card" data-provider="openai">
+                        <div class="card-icon">🤖</div>
+                        <h3>OpenAI</h3>
+                        <p>GPT Models</p>
+                    </div>
+                    <div class="provider-card selected" data-provider="ollama">
+                        <div class="card-icon">🦙</div>
+                        <h3>Ollama</h3>
+                        <p>Local Models</p>
+                    </div>
+                </div>
+                <div id="model-name-group" class="input-group">
+                    <label for="model-name">Model Name</label>
+                    <input type="text" id="model-name" placeholder="mistral (default)">
+                </div>
+                <button id="btn-init" class="btn-primary">Initialize Brain →</button>
+            </div>
+
+            <!-- Step 2: Persona (Optional) -->
+            <div id="step-persona" class="setup-step">
+                <h2>🎭 Persona Mode <span class="optional-badge">Optional</span></h2>
+                <p class="step-desc">Upload a biography to make the Brain respond as that person.</p>
+                <div class="upload-zone" id="upload-zone">
+                    <div class="upload-icon">📄</div>
+                    <p>Drop a <strong>.txt</strong> or <strong>.pdf</strong> file here</p>
+                    <p class="upload-hint">or click to browse</p>
+                    <input type="file" id="file-input" accept=".txt,.pdf" hidden>
+                </div>
+                <div id="upload-status" class="upload-status"></div>
+                <div class="step-actions">
+                    <button id="btn-skip-persona" class="btn-secondary">Skip → Normal Mode</button>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div id="step-loading" class="setup-step">
+                <div class="loader">
+                    <div class="loader-brain">🧠</div>
+                    <p id="loading-text">Initializing neural pathways...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chat Interface -->
+    <div id="chat-container" class="chat-container hidden">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brain-icon-small">🧠</div>
+                <h2>Brain System</h2>
+            </div>
+            <div class="sidebar-info">
+                <div class="info-item">
+                    <span class="info-label">Provider</span>
+                    <span id="info-provider" class="info-value">—</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Model</span>
+                    <span id="info-model" class="info-value">—</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Persona</span>
+                    <span id="info-persona" class="info-value">None</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>🧩 Active Agents</h3>
+                <div class="agent-list">
+                    <div class="agent-chip" data-agent="sensory"><span class="agent-dot sensory"></span>Sensory</div>
+                    <div class="agent-chip" data-agent="memory"><span class="agent-dot memory"></span>Memory</div>
+                    <div class="agent-chip" data-agent="logic"><span class="agent-dot logic"></span>Logic</div>
+                    <div class="agent-chip" data-agent="emotional"><span class="agent-dot emotional"></span>Emotional</div>
+                    <div class="agent-chip" data-agent="executive"><span class="agent-dot executive"></span>Executive</div>
+                </div>
+            </div>
+
+            <div class="sidebar-actions">
+                <button id="btn-change-persona" class="btn-sidebar">🎭 Change Persona</button>
+                <button id="btn-clear-persona" class="btn-sidebar">🔄 Clear Persona</button>
+            </div>
+        </aside>
+
+        <!-- Chat Area -->
+        <main class="chat-main">
+            <div class="chat-header">
+                <h2 id="chat-title">🧠 Brain System</h2>
+                <span id="persona-badge" class="persona-badge hidden">🎭 <span id="persona-name-badge"></span></span>
+            </div>
+            <div id="messages" class="messages">
+                <div class="welcome-message">
+                    <div class="welcome-icon">🧠</div>
+                    <h3>Brain System Online</h3>
+                    <p>Your multi-agent cognitive system is ready. Each message is processed by 5 specialized brain agents working together.</p>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <textarea id="user-input" placeholder="Type your message..." rows="1"></textarea>
+                    <button id="btn-send" class="btn-send" disabled>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 2L11 13"></path>
+                            <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

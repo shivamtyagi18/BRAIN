@@ -1,0 +1,10 @@
+
+langgraph
+langchain
+langchain-core
+langchain-google-genai
+langchain-openai
+langchain-community
+python-dotenv
+flask
+PyPDF2
