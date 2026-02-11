@@ -110,10 +110,11 @@ def chat():
         return jsonify({"status": "error", "message": "Empty message"}), 400
 
     try:
-        response = brain.run(user_input)
+        result = brain.run(user_input)
         return jsonify({
             "status": "ok",
-            "response": response,
+            "response": result["final_response"],
+            "agent_outputs": result["agent_outputs"],
             "persona_active": current_config["persona_active"],
             "persona_name": current_config["persona_name"]
         })

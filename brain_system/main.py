@@ -82,8 +82,14 @@ def main():
                 break
             
             print(f"\n{mode_label} is thinking...")
-            response = brain.run(user_input)
-            print(f"\n{mode_label}: {response}")
+            result = brain.run(user_input)
+            print(f"\n{mode_label}: {result['final_response']}")
+            print("\n" + "·" * 50)
+            print("  🧩 Agent Signals:")
+            for key, agent_data in result["agent_outputs"].items():
+                if key == "executive":
+                    continue  # Already shown as the main response
+                print(f"  [{agent_data['name']}] {agent_data['output'][:200]}...")
             print("-" * 50)
             
     except Exception as e:

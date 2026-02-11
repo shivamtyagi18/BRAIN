@@ -119,7 +119,37 @@ class BrainOrchestrator:
         
         return {"final_response": result["final_response"]}
 
-    def run(self, user_input: str):
+    def run(self, user_input: str) -> dict:
+        """Run the brain pipeline. Returns full state with all agent outputs."""
         initial_state = BrainState(input=user_input)
         result = self.app.invoke(initial_state)
-        return result["final_response"]
+        return {
+            "final_response": result["final_response"],
+            "agent_outputs": {
+                "sensory": {
+                    "name": "Sensory Agent",
+                    "role": "Thalamus & Sensory Cortex",
+                    "output": result.get("sensory_analysis", ""),
+                },
+                "memory": {
+                    "name": "Memory Agent",
+                    "role": "Hippocampus",
+                    "output": result.get("memory_context", ""),
+                },
+                "logic": {
+                    "name": "Logic Agent",
+                    "role": "Left Frontal Lobe",
+                    "output": result.get("logical_analysis", ""),
+                },
+                "emotional": {
+                    "name": "Emotional Agent",
+                    "role": "Amygdala & Limbic System",
+                    "output": result.get("emotional_analysis", ""),
+                },
+                "executive": {
+                    "name": "Executive Agent",
+                    "role": "Prefrontal Cortex",
+                    "output": result.get("final_response", ""),
+                },
+            }
+        }

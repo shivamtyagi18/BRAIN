@@ -204,7 +204,7 @@ async function sendMessage() {
         animateAgents(false);
 
         if (res.status === 'ok') {
-            addMessage('brain', res.response);
+            addMessage('brain', res.response, res.agent_outputs);
         } else {
             addMessage('brain', `⚠️ Error: ${res.message}`);
         }
@@ -219,7 +219,7 @@ async function sendMessage() {
     userInput.focus();
 }
 
-function addMessage(role, text) {
+function addMessage(role, text, agentOutputs) {
     const div = document.createElement('div');
     div.className = `message ${role}`;
 
@@ -231,13 +231,53 @@ function addMessage(role, text) {
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>');
 
+    let agentPanelsHTML = '';
+    if (role === 'brain' && agentOutputs) {
+        const agentOrder = ['sensory', 'memory', 'logic', 'emotional', 'executive'];
+        const panelItems = agentOrder.map(key => {
+            const agent = agentOutputs[key];
+            if (!agent) return '';
+            return `
+                <div class="agent-panel" data-agent="${key}">
+                    <button class="agent-panel-header" onclick="this.parentElement.classList.toggle('open')">
+                        <span class="agent-panel-dot ${key}"></span>
+                        <span class="agent-panel-name">${agent.name}</span>
+                        <span class="agent-panel-role">${agent.role}</span>
+                        <span class="agent-panel-chevron">▼</span>
+                    </button>
+                    <div class="agent-panel-body">${agent.output}</div>
+                </div>
+            `;
+        }).join('');
+
+        agentPanelsHTML = `
+            <div class="agent-panels">
+                <button class="agent-panels-toggle" onclick="toggleAgentPanels(this)">
+                    🧩 Show agent signals <span class="chevron">▼</span>
+                </button>
+                <div class="agent-panels-content">
+                    ${panelItems}
+                </div>
+            </div>
+        `;
+    }
+
     div.innerHTML = `
         <div class="message-avatar">${avatar}</div>
-        <div class="message-body">${formatted}</div>
+        <div class="message-body">${formatted}${agentPanelsHTML}</div>
     `;
 
     messagesDiv.appendChild(div);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function toggleAgentPanels(btn) {
+    btn.classList.toggle('open');
+    const content = btn.nextElementSibling;
+    content.classList.toggle('open');
+    btn.innerHTML = content.classList.contains('open')
+        ? '🧩 Hide agent signals <span class="chevron">▼</span>'
+        : '🧩 Show agent signals <span class="chevron">▼</span>';
 }
 
 function showThinking() {
