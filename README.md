@@ -51,8 +51,8 @@ The system extracts personality traits, speech patterns, reasoning style, and em
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/brain-system.git
-cd brain-system
+git clone https://github.com/shivamtyagi18/BRAIN.git
+cd BRAIN
 pip install -r brain_system/requirements.txt
 ```
 
