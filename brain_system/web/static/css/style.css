@@ -526,6 +526,17 @@ body {
     border-color: var(--border-hover);
 }
 
+.btn-reset {
+    border-color: rgba(252, 92, 124, 0.3);
+    color: var(--error);
+}
+
+.btn-reset:hover {
+    background: rgba(252, 92, 124, 0.1);
+    border-color: var(--error);
+    color: var(--error);
+}
+
 /* Chat Main */
 .chat-main {
     flex: 1;

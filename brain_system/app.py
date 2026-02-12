@@ -96,6 +96,20 @@ def clear_persona():
     return jsonify({"status": "ok", "message": "Persona cleared"})
 
 
+@app.route("/api/reset", methods=["POST"])
+def reset_brain():
+    """Full reset — destroy brain instance and return to setup."""
+    global brain, current_config
+    brain = None
+    current_config = {
+        "provider": "ollama",
+        "model_name": "mistral",
+        "persona_name": None,
+        "persona_active": False
+    }
+    return jsonify({"status": "ok", "message": "Brain reset complete"})
+
+
 @app.route("/api/chat", methods=["POST"])
 def chat():
     """Send a message to the brain and get a response."""

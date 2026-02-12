@@ -7,6 +7,7 @@ const API = {
     chat: (msg) => fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg }) }).then(r => r.json()),
     persona: (file) => { const fd = new FormData(); fd.append('file', file); return fetch('/api/persona', { method: 'POST', body: fd }).then(r => r.json()); },
     clearPersona: () => fetch('/api/persona/clear', { method: 'POST' }).then(r => r.json()),
+    reset: () => fetch('/api/reset', { method: 'POST' }).then(r => r.json()),
     config: () => fetch('/api/config').then(r => r.json()),
 };
 
@@ -373,4 +374,34 @@ $('#btn-clear-persona').addEventListener('click', async () => {
         $('#persona-badge').classList.add('hidden');
         $('#chat-title').textContent = '🧠 Brain System';
     }
+});
+
+$('#btn-new-chat').addEventListener('click', async () => {
+    if (!confirm('Start a new chat? This will reset everything including persona.')) return;
+
+    await API.reset();
+
+    // Clear chat messages and restore welcome
+    messagesDiv.innerHTML = `
+        <div class="welcome-message">
+            <div class="welcome-icon">🧠</div>
+            <h3>Brain System Online</h3>
+            <p>Your multi-agent cognitive system is ready. Each message is processed by 5 specialized brain agents working together.</p>
+        </div>
+    `;
+
+    // Reset sidebar
+    $('#info-provider').textContent = '—';
+    $('#info-model').textContent = '—';
+    $('#info-persona').textContent = 'None';
+    $('#persona-badge').classList.add('hidden');
+    $('#chat-title').textContent = '🧠 Brain System';
+
+    // Reset agent chips
+    document.querySelectorAll('.agent-chip').forEach(c => c.classList.remove('active'));
+
+    // Return to setup modal
+    chatContainer.classList.add('hidden');
+    setupModal.classList.add('active');
+    showStep('provider');
 });
