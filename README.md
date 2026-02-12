@@ -32,11 +32,11 @@ graph LR
 
 | Agent | Brain Analog | What It Does |
 |:------|:-------------|:-------------|
-| **Sensory** | Thalamus & Sensory Cortex | Parses and classifies raw input |
-| **Memory** | Hippocampus | Retrieves relevant past interactions (short & long-term) |
-| **Logic** | Left Frontal Lobe | Factual reasoning and analysis |
-| **Emotional** | Amygdala & Limbic System | Sentiment, ethics, and emotional context |
-| **Executive** | Prefrontal Cortex | Synthesizes all signals into a final decision |
+| **Sensory** | Thalamus & Sensory Cortex | Multi-layer signal classification, pattern recognition, salience detection |
+| **Memory** | Hippocampus & DLPFC | LLM-driven contextual synthesis, associative linking, temporal weighting |
+| **Logic** | Left Frontal Lobe & DLPFC | Deductive/inductive reasoning, fallacy detection, counter-arguments |
+| **Emotional** | Amygdala, Insula & Cingulate | Emotional profiling, empathy reading, ethical safety checks |
+| **Executive** | Full Prefrontal Cortex | Conflict resolution between agents, response calibration, integrated output |
 
 ## 🎭 Persona Mode
 
@@ -78,7 +78,7 @@ Open **http://localhost:5001** in your browser.
 
 #### Command Line
 ```bash
-python3.11 -m brain_system.main
+python3.11 brain_system/main.py
 ```
 
 ## 🖥️ Web Interface
@@ -87,7 +87,10 @@ The web UI features:
 - **Provider selection** — choose Gemini, OpenAI, or Ollama at startup
 - **Persona upload** — drag & drop a `.txt` or `.pdf` biography
 - **Live chat** — dark-mode interface with agent activity indicators
+- **Agent transparency** — expand each agent's internal reasoning with "Show agent signals"
 - **Mid-conversation persona switching** — change or clear persona without restarting
+- **New Chat** — full reset button to start fresh
+- **Clear Memory** — wipe stored memories without restarting
 
 ## 🤖 Supported LLM Providers
 
@@ -151,7 +154,7 @@ Contributions are welcome! Some ideas:
 - **Additional agents** — Add a Creativity Agent, Social Agent, or Moral Reasoning Agent
 - **Streaming responses** — Real-time token streaming in the web UI
 - **Multi-turn persona** — Let the persona evolve based on the conversation
-- **Agent transparency** — Show individual agent outputs before the final synthesis
+- **Voice interface** — Add speech-to-text input and text-to-speech output
 
 ## 📝 License
 
