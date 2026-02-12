@@ -110,6 +110,16 @@ def reset_brain():
     return jsonify({"status": "ok", "message": "Brain reset complete"})
 
 
+@app.route("/api/memory/clear", methods=["POST"])
+def clear_memory():
+    """Clear all stored memories."""
+    import json
+    memory_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "brain_memory.json")
+    with open(memory_path, 'w') as f:
+        json.dump([], f)
+    return jsonify({"status": "ok", "message": "Memory cleared"})
+
+
 @app.route("/api/chat", methods=["POST"])
 def chat():
     """Send a message to the brain and get a response."""

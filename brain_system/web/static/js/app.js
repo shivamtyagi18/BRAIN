@@ -8,6 +8,7 @@ const API = {
     persona: (file) => { const fd = new FormData(); fd.append('file', file); return fetch('/api/persona', { method: 'POST', body: fd }).then(r => r.json()); },
     clearPersona: () => fetch('/api/persona/clear', { method: 'POST' }).then(r => r.json()),
     reset: () => fetch('/api/reset', { method: 'POST' }).then(r => r.json()),
+    clearMemory: () => fetch('/api/memory/clear', { method: 'POST' }).then(r => r.json()),
     config: () => fetch('/api/config').then(r => r.json()),
 };
 
@@ -404,4 +405,12 @@ $('#btn-new-chat').addEventListener('click', async () => {
     chatContainer.classList.add('hidden');
     setupModal.classList.add('active');
     showStep('provider');
+});
+
+$('#btn-clear-memory').addEventListener('click', async () => {
+    if (!confirm('Clear all stored memories? This cannot be undone.')) return;
+    const res = await API.clearMemory();
+    if (res.status === 'ok') {
+        alert('🧹 Memory cleared successfully!');
+    }
 });
