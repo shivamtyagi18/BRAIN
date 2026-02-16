@@ -78,8 +78,15 @@ print(result.emotional)   # Amygdala — emotional analysis
 
 ### Persona Mode
 
+Upload a biography/autobiography (`.txt` or `.pdf`) and the Brain responds as that person. Pass a **relative path** (resolved from your working directory) or an **absolute path**:
+
 ```python
+# Relative path — looks in the directory where you run your script
 brain.load_persona("gandhi_autobiography.pdf")
+
+# Absolute path — works from anywhere
+brain.load_persona("/Users/you/documents/gandhi_autobiography.pdf")
+
 result = brain.think("How should we deal with injustice?")
 print(result.response)    # Responds in Gandhi's voice
 
