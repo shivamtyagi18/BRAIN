@@ -2,17 +2,27 @@
 brain_system.wrapper
 ~~~~~~~~~~~~~~~~~~~~
 
-High-level wrapper that lets developers add Brain's five-agent cognitive
-pipeline to their own projects with a single class.
+High-level wrappers that let developers add Brain's five-agent cognitive
+pipeline to their own projects.
 
-Usage::
+**BrainWrapper** — standalone brain, call ``.think()`` directly::
 
     from brain_system import BrainWrapper
 
     brain = BrainWrapper(provider="openai", model_name="gpt-4o")
     result = brain.think("What is justice?")
     print(result.response)
-    print(result.agent_signals)
+
+**AgentWrapper** — wrap YOUR agent with brain processing::
+
+    from brain_system import AgentWrapper
+
+    @AgentWrapper(provider="openai")
+    def my_agent(query: str, brain_context) -> str:
+        return f"Based on logic: {brain_context.logic[:200]}..."
+
+    result = my_agent("What is justice?")
+    print(result.response)
 """
 
 from __future__ import annotations
@@ -20,7 +30,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional, Union
 
 from .core.orchestrator import BrainOrchestrator
 
@@ -202,3 +212,161 @@ class BrainWrapper:
         if self.persona_active:
             parts.append(f"persona={self.persona_name!r}")
         return f"BrainWrapper({', '.join(parts)})"
+
+
+# ======================================================================
+# AgentWrapper — wrap any existing agent with brain processing
+# ======================================================================
+
+
+@dataclass
+class BrainContext:
+    """Cognitive signals from Brain's preprocessing agents.
+
+    Passed to your agent function so it can use the Brain's analysis
+    when generating its response.
+
+    Attributes:
+        query: The original user input.
+        sensory: Sensory Agent output — input classification and routing.
+        memory: Memory Agent output — relevant past context.
+        logic: Logic Agent output — logical/analytical reasoning.
+        emotional: Emotional Agent output — emotional and ethical analysis.
+    """
+
+    query: str = ""
+    sensory: str = ""
+    memory: str = ""
+    logic: str = ""
+    emotional: str = ""
+
+
+class AgentWrapper:
+    """Wrap an existing agent function with Brain's cognitive pipeline.
+
+    Brain's four preprocessing agents (Sensory, Memory, Logic, Emotional)
+    run first, then their signals are passed to **your** agent function
+    as a :class:`BrainContext`.  Your function acts as the "executive"
+    decision-maker.
+
+    Can be used as a **class** or as a **decorator**.
+
+    **As a class**::
+
+        from brain_system import AgentWrapper, BrainContext
+
+        def my_agent(query: str, ctx: BrainContext) -> str:
+            return f"Logic says: {ctx.logic[:200]}"
+
+        agent = AgentWrapper(my_agent, provider="openai")
+        result = agent.run("What is justice?")
+        print(result.response)
+
+    **As a decorator**::
+
+        from brain_system import AgentWrapper
+
+        @AgentWrapper(provider="ollama", model_name="mistral")
+        def my_agent(query: str, brain_context) -> str:
+            return f"My take: {brain_context.logic[:200]}"
+
+        result = my_agent("What is justice?")
+        print(result.response)
+
+    Parameters:
+        agent_fn: Your agent function.  Must accept ``(query: str, brain_context: BrainContext)``
+            and return a ``str``.
+        provider: LLM provider for the brain agents.
+        model_name: Model identifier (provider-specific).
+        memory_path: Path to JSON memory file.
+    """
+
+    def __init__(
+        self,
+        agent_fn: Optional[Callable] = None,
+        *,
+        provider: str = "gemini",
+        model_name: Optional[str] = None,
+        memory_path: Optional[str] = None,
+    ) -> None:
+        self._provider = provider
+        self._model_name = model_name
+        self._memory_path = memory_path
+        self._agent_fn = agent_fn
+
+        # If agent_fn is provided, build the brain immediately
+        if agent_fn is not None:
+            self._brain = BrainWrapper(
+                provider=provider,
+                model_name=model_name,
+                memory_path=memory_path,
+            )
+
+    def __call__(self, *args, **kwargs):
+        """Support both decorator and direct-call usage."""
+        # Case 1: Used as @AgentWrapper(provider=...) — agent_fn not set yet
+        # The first __call__ receives the decorated function
+        if self._agent_fn is None and len(args) == 1 and callable(args[0]):
+            self._agent_fn = args[0]
+            self._brain = BrainWrapper(
+                provider=self._provider,
+                model_name=self._model_name,
+                memory_path=self._memory_path,
+            )
+            return self  # Return self so subsequent calls go to run()
+
+        # Case 2: Called as agent("some input") — run the pipeline
+        return self.run(*args, **kwargs)
+
+    def run(self, user_input: str) -> BrainResult:
+        """Process *user_input* through Brain's agents, then your agent.
+
+        1. Brain's Sensory, Memory, Logic, and Emotional agents process the input.
+        2. Their signals are bundled into a :class:`BrainContext`.
+        3. Your agent function is called with ``(user_input, brain_context)``.
+        4. Your function's return value becomes the final ``BrainResult.response``.
+        """
+        if self._agent_fn is None:
+            raise RuntimeError("No agent function provided to AgentWrapper.")
+
+        # Run the full brain pipeline to get all agent signals
+        brain_result = self._brain.think(user_input)
+
+        # Build the context for the user's agent
+        context = BrainContext(
+            query=user_input,
+            sensory=brain_result.sensory,
+            memory=brain_result.memory,
+            logic=brain_result.logic,
+            emotional=brain_result.emotional,
+        )
+
+        # Call the user's agent with original input + brain context
+        user_response = self._agent_fn(user_input, context)
+
+        # Return a BrainResult with the user's response + brain signals
+        return BrainResult(
+            response=user_response,
+            agent_signals=brain_result.agent_signals,
+        )
+
+    # ------------------------------------------------------------------
+    # Persona & memory (delegated to internal BrainWrapper)
+    # ------------------------------------------------------------------
+
+    def load_persona(self, filepath: str) -> None:
+        """Load a persona into the brain agents."""
+        self._brain.load_persona(filepath)
+
+    def clear_persona(self) -> None:
+        """Clear the active persona."""
+        self._brain.clear_persona()
+
+    def clear_memory(self) -> None:
+        """Clear all stored memories."""
+        self._brain.clear_memory()
+
+    def __repr__(self) -> str:
+        fn_name = getattr(self._agent_fn, "__name__", "unknown")
+        return f"AgentWrapper({fn_name}, provider={self._provider!r})"
+

@@ -103,17 +103,47 @@ brain = BrainWrapper(provider="gemini", memory_path="./my_memory.json")
 brain.clear_memory()
 ```
 
+### 🔌 Wrap Your Own Agent
+
+Already have an agent? Wrap it with Brain's cognitive pipeline using `AgentWrapper`. Your function receives a `BrainContext` with all four preprocessing agent signals:
+
+```python
+from brain_system import AgentWrapper, BrainContext
+
+def my_agent(query: str, ctx: BrainContext) -> str:
+    """Your agent logic — use brain signals however you want."""
+    return f"Logic: {ctx.logic[:200]}\nEmotion: {ctx.emotional[:200]}"
+
+agent = AgentWrapper(my_agent, provider="openai")
+result = agent.run("Should AI be regulated?")
+print(result.response)       # Your agent's response
+print(result.sensory)         # Brain's sensory signal (also available)
+```
+
+Also works as a **decorator**:
+
+```python
+@AgentWrapper(provider="ollama", model_name="mistral")
+def my_agent(query: str, ctx: BrainContext) -> str:
+    return f"Based on logic: {ctx.logic[:200]}"
+
+result = my_agent("What is justice?")
+```
+
 ### API Reference
 
 | Class / Method | Description |
 |:---|:---|
-| `BrainWrapper(provider, model_name, memory_path)` | Create a Brain instance |
+| `BrainWrapper(provider, model_name, memory_path)` | Create a standalone Brain instance |
 | `.think(input) → BrainResult` | Process input through the 5-agent pipeline |
 | `.load_persona(filepath)` | Load a persona from `.txt` or `.pdf` |
 | `.clear_persona()` | Remove the active persona |
 | `.clear_memory()` | Erase all long-term memories |
 | `.persona_active` | `bool` — is a persona loaded? |
 | `.persona_name` | Name of the active persona |
+| `AgentWrapper(agent_fn, provider, ...)` | Wrap your agent with brain processing |
+| `.run(input) → BrainResult` | Run brain + your agent |
+| `BrainContext` | Dataclass with `.query`, `.sensory`, `.memory`, `.logic`, `.emotional` |
 | `BrainResult.response` | Final synthesized response |
 | `BrainResult.agent_signals` | `dict` of each agent's raw output |
 | `BrainResult.sensory / .memory / .logic / .emotional` | Shortcut accessors |

@@ -14,7 +14,7 @@ Quick start::
 
 __version__ = "0.1.0"
 
-from brain_system.wrapper import BrainWrapper, BrainResult  # noqa: F401
+from brain_system.wrapper import BrainWrapper, BrainResult, AgentWrapper, BrainContext  # noqa: F401
 from brain_system.core.orchestrator import BrainOrchestrator  # noqa: F401
 from brain_system.core.llm_interface import LLMFactory  # noqa: F401
 from brain_system.agents.base_agent import BaseAgent  # noqa: F401
@@ -22,6 +22,8 @@ from brain_system.agents.base_agent import BaseAgent  # noqa: F401
 __all__ = [
     "BrainWrapper",
     "BrainResult",
+    "AgentWrapper",
+    "BrainContext",
     "BrainOrchestrator",
     "LLMFactory",
     "BaseAgent",
