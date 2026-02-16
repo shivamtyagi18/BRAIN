@@ -12,7 +12,7 @@ Quick start::
     print(result.response)
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from brain_system.wrapper import BrainWrapper, BrainResult, AgentWrapper, BrainContext  # noqa: F401
 from brain_system.core.orchestrator import BrainOrchestrator  # noqa: F401
