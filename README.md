@@ -6,7 +6,8 @@
 
 *Five specialized AI agents — modeled after the human brain — collaborate to process your input and generate thoughtful, nuanced responses.*
 
-[![Python 3.11+](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![PyPI](https://img.shields.io/pypi/v/brain-system.svg)](https://pypi.org/project/brain-system/)
 [![LangGraph](https://img.shields.io/badge/Built%20with-LangGraph-orange.svg)](https://github.com/langchain-ai/langgraph)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -46,17 +47,85 @@ The system extracts personality traits, speech patterns, reasoning style, and em
 
 > **Example:** Upload Nelson Mandela's autobiography → ask about dealing with conflict → get a response reflecting his values of reconciliation, strategic patience, and ubuntu philosophy.
 
-## 🚀 Quick Start
+## 📦 Install
 
-### 1. Clone & Install
+```bash
+pip install brain-system
+```
+
+> For the web UI, install the optional extra: `pip install brain-system[web]`
+
+## 🚀 Quick Start — Library Usage
+
+```python
+from brain_system import BrainWrapper
+
+# Create a Brain (choose provider: "gemini", "openai", or "ollama")
+brain = BrainWrapper(provider="ollama", model_name="mistral")
+
+# Process input through all 5 agents
+result = brain.think("What is the meaning of justice?")
+
+# Get the final synthesized response
+print(result.response)
+
+# Inspect individual agent signals
+print(result.sensory)     # Thalamus — input classification
+print(result.memory)      # Hippocampus — memory context
+print(result.logic)       # Frontal Lobe — logical analysis
+print(result.emotional)   # Amygdala — emotional analysis
+```
+
+### Persona Mode
+
+```python
+brain.load_persona("gandhi_autobiography.pdf")
+result = brain.think("How should we deal with injustice?")
+print(result.response)    # Responds in Gandhi's voice
+
+brain.clear_persona()     # Revert to default
+```
+
+### Memory Management
+
+```python
+# Custom memory file location
+brain = BrainWrapper(provider="gemini", memory_path="./my_memory.json")
+
+# Clear all stored memories
+brain.clear_memory()
+```
+
+### API Reference
+
+| Class / Method | Description |
+|:---|:---|
+| `BrainWrapper(provider, model_name, memory_path)` | Create a Brain instance |
+| `.think(input) → BrainResult` | Process input through the 5-agent pipeline |
+| `.load_persona(filepath)` | Load a persona from `.txt` or `.pdf` |
+| `.clear_persona()` | Remove the active persona |
+| `.clear_memory()` | Erase all long-term memories |
+| `.persona_active` | `bool` — is a persona loaded? |
+| `.persona_name` | Name of the active persona |
+| `BrainResult.response` | Final synthesized response |
+| `BrainResult.agent_signals` | `dict` of each agent's raw output |
+| `BrainResult.sensory / .memory / .logic / .emotional` | Shortcut accessors |
+
+See [`examples/`](examples/) for complete usage scripts.
+
+---
+
+## 🖥️ Development Setup
+
+### Clone & Install
 
 ```bash
 git clone https://github.com/shivamtyagi18/BRAIN.git
 cd BRAIN
-pip install -r brain_system/requirements.txt
+pip install -e ".[web,dev]"
 ```
 
-### 2. Configure (Optional)
+### Configure (Optional)
 
 Create a `.env` file in the project root for cloud providers:
 
@@ -68,17 +137,17 @@ OPENAI_API_KEY=your_key_here
 
 > **No API key needed for Ollama** — runs entirely on your local machine.
 
-### 3. Run
+### Run
 
-#### Web UI (Recommended)
+#### Web UI
 ```bash
-python3.11 -m brain_system.app
+python -m brain_system.app
 ```
 Open **http://localhost:5001** in your browser.
 
 #### Command Line
 ```bash
-python3.11 brain_system/main.py
+brain-cli
 ```
 
 ## 🖥️ Web Interface
@@ -114,11 +183,17 @@ ollama pull dolphin-mistral
 
 ```
 brain-system/
+├── pyproject.toml                  # Package config & dependencies
 ├── run.sh                          # Single-command launcher
+├── examples/
+│   ├── basic_usage.py              # Minimal library usage
+│   ├── persona_mode.py             # Persona loading example
+│   └── custom_provider.py          # Provider switching example
 └── brain_system/
-    ├── app.py                      # Flask web server (API + UI)
+    ├── __init__.py                 # Public API exports
+    ├── wrapper.py                  # BrainWrapper — developer entry point
+    ├── app.py                      # Flask web server (optional)
     ├── main.py                     # CLI entry point
-    ├── requirements.txt
     ├── agents/
     │   ├── base_agent.py           # Abstract base with persona injection
     │   ├── sensory_agent.py        # Input parsing (Thalamus)

@@ -1,0 +1,2 @@
+recursive-include brain_system/web *
+include brain_system/py.typed

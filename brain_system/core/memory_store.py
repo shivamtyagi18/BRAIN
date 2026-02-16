@@ -7,8 +7,8 @@ from typing import List, Dict, Any
 class MemoryStore:
     def __init__(self, filepath: str = None):
         if filepath is None:
-            # Store memory in the project root by default
-            filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "brain_memory.json")
+            # Default to brain_memory.json in the current working directory
+            filepath = os.path.join(os.getcwd(), "brain_memory.json")
         self.filepath = os.path.abspath(filepath)
         self._ensure_file_exists()
 
