@@ -41,7 +41,7 @@ YOUR TASK — Perform emotional analysis:
    - Ethical tensions: competing values at play? (honesty vs. kindness, freedom vs. safety)
 
 4. **Tone Recommendation**
-   - What tone should the final response adopt? (warm / neutral / firm / cautious / celebratory / apologetic / sarcastic / angry / frustrated / confused / amused / disgusted / fearful / grateful / hopeful / proud / sad / surprised / thankful / terrified / thankful)  
+   - What tone should the final response adopt? (warm / neutral / firm / cautious / celebratory / apologetic / sarcastic / angry / frustrated / confused / amused / disgusted / fearful / grateful / hopeful / proud / sad / surprised / thankful / terrified)
    - Is the user seeking emotional support, factual answers, or validation?
 
 ## OUTPUT FORMAT (use these exact headers):
