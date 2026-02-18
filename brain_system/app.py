@@ -3,6 +3,7 @@ import os
 from flask import Flask, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 from .core.orchestrator import BrainOrchestrator
+from .personas.persona_registry import list_personas, get_persona
 
 app = Flask(
     __name__,
@@ -94,6 +95,39 @@ def clear_persona():
     current_config["persona_name"] = None
     current_config["persona_active"] = False
     return jsonify({"status": "ok", "message": "Persona cleared"})
+
+
+@app.route("/api/personas", methods=["GET"])
+def list_available_personas():
+    """Return list of available pre-curated personas."""
+    return jsonify({"status": "ok", "personas": list_personas()})
+
+
+@app.route("/api/persona/select", methods=["POST"])
+def select_persona():
+    """Select a pre-curated persona by ID."""
+    global brain, current_config
+    if brain is None:
+        return jsonify({"status": "error", "message": "Brain not initialized"}), 400
+
+    data = request.json
+    persona_id = data.get("id", "")
+
+    persona_data = get_persona(persona_id)
+    if persona_data is None:
+        return jsonify({"status": "error", "message": f"Unknown persona: {persona_id}"}), 404
+
+    try:
+        brain.set_persona_from_dict(persona_data)
+        current_config["persona_name"] = brain.persona.name
+        current_config["persona_active"] = True
+        return jsonify({
+            "status": "ok",
+            "persona_name": brain.persona.name,
+            "profile": brain.persona.profile
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 @app.route("/api/reset", methods=["POST"])

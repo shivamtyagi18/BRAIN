@@ -329,6 +329,95 @@ body {
     vertical-align: middle;
 }
 
+/* Pre-curated Persona Grid */
+.persona-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+    max-height: 340px;
+    overflow-y: auto;
+}
+
+.persona-grid::-webkit-scrollbar {
+    width: 4px;
+}
+
+.persona-grid::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+}
+
+.persona-card-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 16px 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.persona-card-btn:hover {
+    border-color: var(--accent-primary);
+    background: rgba(124, 92, 252, 0.08);
+    box-shadow: 0 0 16px rgba(124, 92, 252, 0.15);
+    transform: translateY(-2px);
+}
+
+.persona-card-btn:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-glow);
+}
+
+.persona-card-emoji {
+    font-size: 28px;
+    line-height: 1;
+}
+
+.persona-card-name {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.persona-card-cat {
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.3;
+}
+
+.persona-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.persona-divider::before,
+.persona-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+/* Step Persona — wider modal for grid */
+.step-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
 /* Loader */
 .loader {
     text-align: center;
@@ -828,9 +917,11 @@ body {
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     padding: 32px;
-    max-width: 440px;
+    max-width: 560px;
     width: 100%;
     box-shadow: var(--shadow-glow);
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 /* ============================

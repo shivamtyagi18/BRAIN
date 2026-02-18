@@ -145,13 +145,33 @@ class BrainWrapper:
     # Persona helpers
     # ------------------------------------------------------------------
 
-    def load_persona(self, filepath: str) -> None:
-        """Load a persona from a biography/autobiography document.
+    @staticmethod
+    def list_personas() -> list[dict]:
+        """Return available pre-curated personas.
 
-        Supported formats: ``.txt``, ``.pdf``.  After loading, every agent
-        will respond in the voice and style of the extracted persona.
+        Each dict has: ``id``, ``name``, ``emoji``, ``category``, ``source``.
+        Use the ``id`` value with :meth:`load_persona`.
         """
-        self._orchestrator.set_persona(filepath)
+        from .personas.persona_registry import list_personas as _list
+        return _list()
+
+    def load_persona(self, persona_or_path: str) -> None:
+        """Load a persona by pre-curated ID or from a document file.
+
+        Pre-curated IDs: ``gandhi``, ``einstein``, ``mandela``, ``curie``,
+        ``davinci``, ``mlk``, ``tesla``, ``lovelace``.
+
+        Call :meth:`list_personas` to see all available IDs.
+
+        Also accepts a ``.txt`` or ``.pdf`` file path for custom personas.
+        """
+        from .personas.persona_registry import get_persona
+
+        persona_data = get_persona(persona_or_path)
+        if persona_data is not None:
+            self._orchestrator.set_persona_from_dict(persona_data)
+        else:
+            self._orchestrator.set_persona(persona_or_path)
 
     def clear_persona(self) -> None:
         """Remove the active persona.  Agents revert to default behaviour."""

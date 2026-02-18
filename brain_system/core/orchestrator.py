@@ -40,8 +40,16 @@ class BrainOrchestrator:
             provider=self.provider,
             model_name=self.model_name
         )
+        self._inject_persona()
 
-        # Inject role-specific persona context into each agent
+    def set_persona_from_dict(self, persona_dict: dict):
+        """Load a pre-curated persona from a dict and inject into all agents."""
+        self.persona = PersonaProfile()
+        self.persona.load_from_dict(persona_dict)
+        self._inject_persona()
+
+    def _inject_persona(self):
+        """Inject role-specific persona context into each agent."""
         agents = [self.sensory, self.memory, self.emotional, self.logic, self.executive]
         for agent in agents:
             agent.persona_context = self.persona.get_agent_context(agent.role)

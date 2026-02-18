@@ -7,6 +7,8 @@ const API = {
     chat: (msg) => fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg }) }).then(r => r.json()),
     persona: (file) => { const fd = new FormData(); fd.append('file', file); return fetch('/api/persona', { method: 'POST', body: fd }).then(r => r.json()); },
     clearPersona: () => fetch('/api/persona/clear', { method: 'POST' }).then(r => r.json()),
+    listPersonas: () => fetch('/api/personas').then(r => r.json()),
+    selectPersona: (id) => fetch('/api/persona/select', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }).then(r => r.json()),
     reset: () => fetch('/api/reset', { method: 'POST' }).then(r => r.json()),
     clearMemory: () => fetch('/api/memory/clear', { method: 'POST' }).then(r => r.json()),
     config: () => fetch('/api/config').then(r => r.json()),
@@ -62,6 +64,7 @@ $('#btn-init').addEventListener('click', async () => {
             $('#info-model').textContent = modelName || 'default';
 
             loadingText.textContent = 'Brain initialized! Loading persona options...';
+            loadPersonaGrid();
             setTimeout(() => showStep('persona'), 600);
         } else {
             alert('Error: ' + res.message);
@@ -72,6 +75,81 @@ $('#btn-init').addEventListener('click', async () => {
         showStep('provider');
     }
 });
+
+// ============================
+// Pre-curated Persona Grid
+// ============================
+
+let availablePersonas = [];
+
+async function loadPersonaGrid() {
+    try {
+        const res = await API.listPersonas();
+        if (res.status === 'ok') {
+            availablePersonas = res.personas;
+            renderPersonaGrid($('#persona-grid'), false);
+        }
+    } catch (e) {
+        console.error('Failed to load personas:', e);
+    }
+}
+
+function renderPersonaGrid(container, isOverlay) {
+    container.innerHTML = availablePersonas.map(p => `
+        <button class="persona-card-btn" data-persona-id="${p.id}" data-overlay="${isOverlay}">
+            <span class="persona-card-emoji">${p.emoji}</span>
+            <span class="persona-card-name">${p.name}</span>
+            <span class="persona-card-cat">${p.source}</span>
+        </button>
+    `).join('');
+
+    container.querySelectorAll('.persona-card-btn').forEach(btn => {
+        btn.addEventListener('click', () => selectPreCuratedPersona(btn.dataset.personaId, isOverlay === 'true' || isOverlay === true));
+    });
+}
+
+async function selectPreCuratedPersona(personaId, isOverlay) {
+    const statusEl = isOverlay
+        ? document.querySelector('#overlay-upload-status')
+        : $('#upload-status');
+
+    if (statusEl) {
+        statusEl.textContent = '🎭 Loading persona...';
+        statusEl.className = 'upload-status loading';
+    }
+
+    try {
+        const res = await API.selectPersona(personaId);
+        if (res.status === 'ok') {
+            if (statusEl) {
+                statusEl.textContent = `✅ Persona loaded: ${res.persona_name}`;
+                statusEl.className = 'upload-status success';
+            }
+
+            $('#info-persona').textContent = res.persona_name;
+            $('#persona-badge').classList.remove('hidden');
+            $('#persona-name-badge').textContent = res.persona_name;
+            $('#chat-title').textContent = `🎭 ${res.persona_name}`;
+
+            if (isOverlay) {
+                const overlay = document.querySelector('.persona-overlay');
+                if (overlay) setTimeout(() => overlay.remove(), 800);
+            } else {
+                setTimeout(() => enterChat(), 800);
+            }
+        } else {
+            if (statusEl) {
+                statusEl.textContent = `❌ ${res.message}`;
+                statusEl.className = 'upload-status error';
+            }
+        }
+    } catch (e) {
+        if (statusEl) {
+            statusEl.textContent = `❌ ${e.message}`;
+            statusEl.className = 'upload-status error';
+        }
+    }
+}
 
 // ============================
 // Persona Upload
@@ -317,6 +395,8 @@ $('#btn-change-persona').addEventListener('click', () => {
     overlay.innerHTML = `
         <div class="modal-content">
             <h2 style="margin-bottom: 16px;">🎭 Change Persona</h2>
+            <div id="overlay-persona-grid" class="persona-grid"></div>
+            <div class="persona-divider"><span>or upload your own</span></div>
             <div class="upload-zone" id="overlay-upload-zone">
                 <div class="upload-icon">📄</div>
                 <p>Drop a <strong>.txt</strong> or <strong>.pdf</strong> file here</p>
@@ -328,6 +408,9 @@ $('#btn-change-persona').addEventListener('click', () => {
         </div>
     `;
     document.body.appendChild(overlay);
+
+    // Render persona grid in overlay
+    renderPersonaGrid(overlay.querySelector('#overlay-persona-grid'), true);
 
     const zone = overlay.querySelector('#overlay-upload-zone');
     const input = overlay.querySelector('#overlay-file-input');

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🧠 Brain System</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=4">
+    <link rel="stylesheet" href="/static/css/style.css?v=5">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
@@ -49,7 +49,9 @@
             <!-- Step 2: Persona (Optional) -->
             <div id="step-persona" class="setup-step">
                 <h2>🎭 Persona Mode <span class="optional-badge">Optional</span></h2>
-                <p class="step-desc">Upload a biography to make the Brain respond as that person.</p>
+                <p class="step-desc">Choose a famous personality or upload a biography.</p>
+                <div id="persona-grid" class="persona-grid"></div>
+                <div class="persona-divider"><span>or upload your own</span></div>
                 <div class="upload-zone" id="upload-zone">
                     <div class="upload-icon">📄</div>
                     <p>Drop a <strong>.txt</strong> or <strong>.pdf</strong> file here</p>
@@ -145,7 +147,7 @@
         </main>
     </div>
 
-    <script src="/static/js/app.js?v=4"></script>
+    <script src="/static/js/app.js?v=5"></script>
 </body>
 
 </html>

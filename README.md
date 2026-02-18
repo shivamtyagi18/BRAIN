@@ -41,11 +41,28 @@ graph LR
 
 ## 🎭 Persona Mode
 
-Upload a biography or autobiography, and the entire Brain responds **as that person would**.
+The Brain can embody famous personalities — or anyone you provide a biography for.
 
-The system extracts personality traits, speech patterns, reasoning style, and emotional tendencies — then injects tailored context into each agent. The Logic Agent thinks in their reasoning style, the Emotional Agent mirrors their emotional tendencies, and the Executive Agent speaks in their voice.
+### Pre-curated Personas
 
-> **Example:** Upload Nelson Mandela's autobiography → ask about dealing with conflict → get a response reflecting his values of reconciliation, strategic patience, and ubuntu philosophy.
+8 personalities sourced from their autobiographies are available out of the box — **instant loading, no LLM call required:**
+
+| Persona | ID | Source |
+|:--|:--|:--|
+| 🕊️ Mahatma Gandhi | `gandhi` | *The Story of My Experiments with Truth* |
+| 🔬 Albert Einstein | `einstein` | *The World As I See It* |
+| ✊ Nelson Mandela | `mandela` | *Long Walk to Freedom* |
+| ⚗️ Marie Curie | `curie` | *Madame Curie* by Ève Curie |
+| 🎨 Leonardo da Vinci | `davinci` | Personal Notebooks |
+| ✝️ Martin Luther King Jr. | `mlk` | *Stride Toward Freedom* |
+| ⚡ Nikola Tesla | `tesla` | *My Inventions* |
+| 💻 Ada Lovelace | `lovelace` | Notes on the Analytical Engine |
+
+### Custom Personas
+
+Upload any biography or autobiography (`.txt` / `.pdf`), and the system extracts personality traits, speech patterns, reasoning style, and emotional tendencies — then injects tailored context into each agent. The Logic Agent thinks in their reasoning style, the Emotional Agent mirrors their emotional tendencies, and the Executive Agent speaks in their voice.
+
+> **Example:** Select Nelson Mandela → ask about dealing with conflict → get a response reflecting his values of reconciliation, strategic patience, and ubuntu philosophy.
 
 ## 📦 Install
 
@@ -78,17 +95,22 @@ print(result.emotional)   # Amygdala — emotional analysis
 
 ### Persona Mode
 
-Upload a biography/autobiography (`.txt` or `.pdf`) and the Brain responds as that person. Pass a **relative path** (resolved from your working directory) or an **absolute path**:
+Use a pre-curated persona or upload a biography/autobiography (`.txt` or `.pdf`):
 
 ```python
-# Relative path — looks in the directory where you run your script
+# Discover available personas
+for p in brain.list_personas():
+    print(f"{p['emoji']} {p['name']}  →  ID: {p['id']}")
+
+# Pre-curated persona — loads instantly, no LLM call
+brain.load_persona("gandhi")          # by ID
+brain.load_persona("einstein")
+
+# Custom persona — pass a file path
 brain.load_persona("gandhi_autobiography.pdf")
 
-# Absolute path — works from anywhere
-brain.load_persona("/Users/you/documents/gandhi_autobiography.pdf")
-
 result = brain.think("How should we deal with injustice?")
-print(result.response)    # Responds in Gandhi's voice
+print(result.response)    # Responds in persona's voice
 
 brain.clear_persona()     # Revert to default
 ```
@@ -136,7 +158,8 @@ result = my_agent("What is justice?")
 |:---|:---|
 | `BrainWrapper(provider, model_name, memory_path)` | Create a standalone Brain instance |
 | `.think(input) → BrainResult` | Process input through the 5-agent pipeline |
-| `.load_persona(filepath)` | Load a persona from `.txt` or `.pdf` |
+| `.load_persona(id_or_path)` | Load a pre-curated persona by ID or a custom `.txt`/`.pdf` |
+| `.list_personas()` | Returns list of available pre-curated persona dicts |
 | `.clear_persona()` | Remove the active persona |
 | `.clear_memory()` | Erase all long-term memories |
 | `.persona_active` | `bool` — is a persona loaded? |
@@ -191,7 +214,8 @@ brain-cli
 
 The web UI features:
 - **Provider selection** — choose Gemini, OpenAI, or Ollama at startup
-- **Persona upload** — drag & drop a `.txt` or `.pdf` biography
+- **Pre-curated personas** — pick from 8 famous personalities in a card grid
+- **Custom persona upload** — drag & drop a `.txt` or `.pdf` biography
 - **Live chat** — dark-mode interface with agent activity indicators
 - **Agent transparency** — expand each agent's internal reasoning with "Show agent signals"
 - **Mid-conversation persona switching** — change or clear persona without restarting
@@ -244,6 +268,9 @@ brain-system/
     │   ├── memory_store.py         # Persistent memory (JSON)
     │   ├── document_loader.py      # TXT/PDF document ingestion
     │   └── persona.py              # Persona extraction & injection
+    ├── personas/
+    │   ├── __init__.py             # Package exports
+    │   └── persona_registry.py     # 8 pre-curated famous persona profiles
     └── web/
         ├── templates/index.html    # Chat interface
         └── static/

@@ -68,6 +68,18 @@ Text to analyze:
 
         print(f"✅ Persona loaded: {self.name}")
 
+    def load_from_dict(self, profile_dict: Dict[str, Any]):
+        """
+        Load a pre-curated persona profile directly from a dictionary.
+        Skips LLM extraction — used for pre-curated personas.
+        """
+        self.name = profile_dict.get("name", "Unknown")
+        self.profile = dict(profile_dict.get("profile", {}))
+        self.raw_summary = f"Pre-curated persona: {self.name}"
+        self.active = True
+        self._document_text = ""
+        print(f"✅ Pre-curated persona loaded: {self.name}")
+
     def _parse_profile(self, raw_text: str):
         """Parse the LLM's structured output into a dictionary."""
         fields = [
