@@ -22,11 +22,26 @@ class BaseAgent(ABC):
     def _query_llm(self, system_prompt: str, user_input: str) -> str:
         """
         Helper method to query the LLM with a system and user message.
-        Prepends persona context if active.
+        Injects persona context as a structured section within the prompt.
         """
         full_prompt = system_prompt
         if self.persona_context:
-            full_prompt = self.persona_context + "\n\n" + system_prompt
+            # Insert persona as a dedicated section after the role definition
+            # rather than blindly prepending it
+            persona_block = (
+                "\n\n--- ACTIVE PERSONA ---\n"
+                "You are currently embodying the following persona. "
+                "All your processing must be filtered through this identity — "
+                "adopt their worldview, reasoning patterns, and communication style.\n\n"
+                f"{self.persona_context}\n"
+                "--- END PERSONA ---\n"
+            )
+            # Insert after the first paragraph (role definition) if possible
+            first_break = full_prompt.find("\n\n", 10)
+            if first_break != -1:
+                full_prompt = full_prompt[:first_break] + persona_block + full_prompt[first_break:]
+            else:
+                full_prompt = full_prompt + persona_block
 
         messages = [
             SystemMessage(content=full_prompt),
