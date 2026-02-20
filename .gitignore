@@ -26,3 +26,4 @@ env/
 brain_memory.json
 brain_system/uploads/
 *.pdf
+.brain_vector_store/
