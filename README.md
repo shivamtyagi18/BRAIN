@@ -34,7 +34,7 @@ graph LR
 | Agent | Brain Analog | What It Does |
 |:------|:-------------|:-------------|
 | **Sensory** | Thalamus & Sensory Cortex | Multi-layer signal classification, pattern recognition, salience detection |
-| **Memory** | Hippocampus & DLPFC | LLM-driven contextual synthesis, associative linking, temporal weighting |
+| **Memory** | Hippocampus | Persona biography retrieval via ZVec semantic search |
 | **Logic** | Left Frontal Lobe & DLPFC | Deductive/inductive reasoning, fallacy detection, counter-arguments |
 | **Emotional** | Amygdala, Insula & Cingulate | Emotional profiling, empathy reading, ethical safety checks |
 | **Executive** | Full Prefrontal Cortex | Conflict resolution between agents, response calibration, integrated output |
@@ -265,7 +265,9 @@ brain-system/
     ├── core/
     │   ├── orchestrator.py         # LangGraph workflow engine
     │   ├── llm_interface.py        # Multi-provider LLM factory
-    │   ├── memory_store.py         # Persistent memory (JSON)
+    │   ├── vector_memory.py        # ZVec persona biography search
+    │   ├── working_memory.py       # Conversation context buffer
+    │   ├── memory_store.py         # Legacy memory (JSON)
     │   ├── document_loader.py      # TXT/PDF document ingestion
     │   └── persona.py              # Persona extraction & injection
     ├── personas/
@@ -282,18 +284,18 @@ brain-system/
 
 - **LangGraph Orchestration** — Agents run as nodes in a compiled state graph with parallel execution for Memory, Logic, and Emotional processing
 - **Modular LLM Factory** — Swap providers with a single parameter; no code changes needed
-- **Dual Memory** — Short-term (conversation context) + Long-term (persistent JSON store with keyword retrieval)
+- **Dual Memory Architecture** — Working Memory (conversation buffer) + ZVec-powered Hippocampus (semantic persona biography search with 384-dim sentence transformer embeddings)
 - **Persona Injection** — Role-specific context: each agent gets *different* aspects of the persona profile tailored to its function
 
 ## 🤝 Contributing
 
 Contributions are welcome! Some ideas:
 
-- **Vector memory** — Replace JSON keyword search with embedding-based retrieval
 - **Additional agents** — Add a Creativity Agent, Social Agent, or Moral Reasoning Agent
 - **Streaming responses** — Real-time token streaming in the web UI
 - **Multi-turn persona** — Let the persona evolve based on the conversation
 - **Voice interface** — Add speech-to-text input and text-to-speech output
+- **RAG over full books** — Index entire autobiographies (not just profiles) for deeper persona embodiment
 
 ## 📝 License
 

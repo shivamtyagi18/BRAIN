@@ -119,12 +119,6 @@ class BrainWrapper:
             model_name=model_name,
         )
 
-        # Override the memory store path if the caller specified one
-        if memory_path is not None:
-            self._orchestrator.memory.memory_store.filepath = os.path.abspath(
-                memory_path
-            )
-
     # ------------------------------------------------------------------
     # Core API
     # ------------------------------------------------------------------
@@ -191,10 +185,8 @@ class BrainWrapper:
     # ------------------------------------------------------------------
 
     def clear_memory(self) -> None:
-        """Erase all stored long-term memories."""
-        filepath = self._orchestrator.memory.memory_store.filepath
-        with open(filepath, "w") as f:
-            json.dump([], f)
+        """Clear conversation history (working memory)."""
+        self._orchestrator.working_memory.clear()
 
     # ------------------------------------------------------------------
     # Introspection

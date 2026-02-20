@@ -92,6 +92,7 @@ def clear_persona():
     for agent in agents:
         agent.persona_context = ""
     brain.persona = None
+    brain.vector_memory.clear()
     current_config["persona_name"] = None
     current_config["persona_active"] = False
     return jsonify({"status": "ok", "message": "Persona cleared"})
@@ -146,12 +147,11 @@ def reset_brain():
 
 @app.route("/api/memory/clear", methods=["POST"])
 def clear_memory():
-    """Clear all stored memories."""
-    import json
-    memory_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "brain_memory.json")
-    with open(memory_path, 'w') as f:
-        json.dump([], f)
-    return jsonify({"status": "ok", "message": "Memory cleared"})
+    """Clear conversation working memory."""
+    global brain
+    if brain is not None:
+        brain.working_memory.clear()
+    return jsonify({"status": "ok", "message": "Conversation memory cleared"})
 
 
 @app.route("/api/chat", methods=["POST"])

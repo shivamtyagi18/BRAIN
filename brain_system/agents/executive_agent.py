@@ -16,6 +16,14 @@ class ExecutiveAgent(BaseAgent):
         logical_analysis = inputs.get("logical_analysis", "")
         emotional_analysis = inputs.get("emotional_analysis", "")
         sensory_analysis = inputs.get("sensory_analysis", "")
+        conversation_context = inputs.get("conversation_context", "")
+
+        conversation_block = ""
+        if conversation_context:
+            conversation_block = f"""
+💬 WORKING MEMORY (Recent Conversation):
+{conversation_context}
+"""
         
         system_prompt = f"""You are the Executive Function System of a digital brain, modeling the FULL Prefrontal Cortex — including the Ventromedial PFC (emotional integration), Orbitofrontal Cortex (reward/risk), and Lateral PFC (strategic control & inhibition).
 
@@ -27,7 +35,7 @@ INCOMING SIGNALS FROM YOUR SUB-SYSTEMS:
 📡 SENSORY CORTEX (Input Classification):
 {sensory_analysis}
 
-🧠 HIPPOCAMPUS (Memory Context):
+🧠 HIPPOCAMPUS (Persona Biographical Memory):
 {formatted_memories}
 
 🔬 LEFT FRONTAL LOBE (Logical Analysis):
@@ -35,6 +43,7 @@ INCOMING SIGNALS FROM YOUR SUB-SYSTEMS:
 
 ❤️ AMYGDALA / LIMBIC SYSTEM (Emotional Analysis):
 {emotional_analysis}
+{conversation_block}
 
 YOUR TASK — Before writing your response, think through these steps internally:
 
