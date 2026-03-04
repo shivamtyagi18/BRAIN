@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "brain-system"
-version = "0.4.0"
+version = "0.4.1"
 description = "A multi-agent cognitive architecture powered by LangGraph — five specialized AI agents modeled after the human brain."
 readme = "README.md"
 license = { text = "MIT" }
