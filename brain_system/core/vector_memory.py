@@ -7,6 +7,7 @@ by meaning rather than keyword matching.
 """
 
 import os
+import re
 import shutil
 import uuid
 from typing import List, Dict, Optional
@@ -23,6 +24,11 @@ class VectorMemory:
 
     # Embedding dimension for the default Sentence Transformer model
     _EMBEDDING_DIM = 384
+
+    # Chunking parameters for full books
+    CHUNK_SIZE = 500        # target characters per chunk
+    CHUNK_OVERLAP = 50      # overlap between consecutive chunks
+    BATCH_SIZE = 100        # insert batch size for large documents
 
     def __init__(self, storage_dir: Optional[str] = None):
         if not ZVEC_AVAILABLE:
@@ -74,37 +80,45 @@ class VectorMemory:
     # ------------------------------------------------------------------
 
     def index_text(self, text: str, persona_name: str) -> int:
-        """Chunk a biography text into paragraphs and index them.
+        """Chunk a biography text and index it for semantic search.
 
+        Handles full books (500+ pages) with sentence-aware chunking.
         Returns the number of chunks indexed.
         """
         safe_name = persona_name.lower().replace(" ", "_")[:40]
         self._collection = self._create_collection(safe_name)
         embedder = self._get_embedder()
 
-        # Split into paragraph-level chunks
         chunks = self._chunk_text(text)
         if not chunks:
             return 0
 
-        docs = []
-        for chunk in chunks:
-            embedding = embedder.embed(chunk)
-            doc = zvec.Doc(
-                id=str(uuid.uuid4()),
-                vectors={"embedding": embedding},
-                fields={
-                    "chunk_text": chunk,
-                    "chunk_type": "biography",
-                },
-            )
-            docs.append(doc)
+        total = len(chunks)
+        indexed = 0
 
-        self._collection.insert(docs)
+        # Insert in batches (efficient for large books)
+        for batch_start in range(0, total, self.BATCH_SIZE):
+            batch_chunks = chunks[batch_start:batch_start + self.BATCH_SIZE]
+            docs = []
+            for chunk in batch_chunks:
+                embedding = embedder.embed(chunk)
+                doc = zvec.Doc(
+                    id=str(uuid.uuid4()),
+                    vectors={"embedding": embedding},
+                    fields={
+                        "chunk_text": chunk,
+                        "chunk_type": "biography",
+                    },
+                )
+                docs.append(doc)
+
+            self._collection.insert(docs)
+            indexed += len(docs)
+            print(f"  📖 Indexed {indexed}/{total} passages...", end="\r")
+
         self._collection.flush()
-
-        print(f"📚 Indexed {len(docs)} biography passages for {persona_name}")
-        return len(docs)
+        print(f"📚 Indexed {total} biography passages for {persona_name}  ")
+        return total
 
     def index_profile(self, profile: Dict[str, str], persona_name: str) -> int:
         """Index a pre-curated persona profile dict.
@@ -173,31 +187,68 @@ class VectorMemory:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _chunk_text(text: str, min_length: int = 50) -> List[str]:
-        """Split text into paragraph-level chunks.
+    def _chunk_text(
+        text: str,
+        chunk_size: int = 500,
+        overlap: int = 50,
+    ) -> List[str]:
+        """Sentence-aware fixed-size chunking for full books.
 
-        Splits on double newlines (paragraphs), then merges very short
-        chunks with their neighbours so each chunk has enough context.
+        Strategy:
+        1. Split text into sentences using regex.
+        2. Group sentences into chunks of ~chunk_size characters.
+        3. Overlap consecutive chunks by ~overlap characters to
+           preserve context at boundaries.
+
+        Handles PDFs that extract as continuous text (no paragraph
+        breaks) as well as well-formatted text with paragraphs.
         """
-        raw = [p.strip() for p in text.split("\n\n") if p.strip()]
+        # Normalize whitespace (PDFs often have weird spacing)
+        text = re.sub(r"\s+", " ", text).strip()
+        if not text:
+            return []
 
-        # Merge short paragraphs
-        merged: List[str] = []
-        buffer = ""
-        for para in raw:
-            if buffer:
-                buffer += " " + para
+        # Split into sentences — handles Mr./Mrs./Dr. abbreviations
+        sentences = re.split(
+            r"(?<=[.!?])\s+(?=[A-Z\"\'\u201c(])",
+            text,
+        )
+
+        # Build chunks by grouping sentences
+        chunks: List[str] = []
+        current_chunk = ""
+
+        for sentence in sentences:
+            sentence = sentence.strip()
+            if not sentence:
+                continue
+
+            # If adding this sentence exceeds chunk_size, finalize chunk
+            if current_chunk and len(current_chunk) + len(sentence) + 1 > chunk_size:
+                chunks.append(current_chunk.strip())
+
+                # Start next chunk with overlap from the end of this chunk
+                if overlap > 0 and len(current_chunk) > overlap:
+                    # Take the last ~overlap chars, starting from a word boundary
+                    tail = current_chunk[-overlap:]
+                    word_start = tail.find(" ")
+                    if word_start != -1:
+                        current_chunk = tail[word_start + 1:] + " " + sentence
+                    else:
+                        current_chunk = sentence
+                else:
+                    current_chunk = sentence
             else:
-                buffer = para
+                if current_chunk:
+                    current_chunk += " " + sentence
+                else:
+                    current_chunk = sentence
 
-            if len(buffer) >= min_length:
-                merged.append(buffer)
-                buffer = ""
+        # Don't forget the last chunk
+        if current_chunk.strip():
+            chunks.append(current_chunk.strip())
 
-        if buffer:
-            if merged:
-                merged[-1] += " " + buffer
-            else:
-                merged.append(buffer)
+        # Filter out very short chunks (less than 30 chars)
+        chunks = [c for c in chunks if len(c) >= 30]
 
-        return merged
+        return chunks
